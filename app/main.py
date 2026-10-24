@@ -40,40 +40,25 @@ app.add_exception_handler(
 )
 
 
+
 # Log requests and return a correlation ID
 @app.middleware("http")
-async def correlation_and_logging(
-    request: Request,
-    call_next,
-):
-    correlation_id = request.headers.get(
-        "X-Correlation-Id",
-        str(uuid.uuid4()),
-    )
-
+async def correlation_and_logging(request: Request, call_next):
+    cid = request.headers.get("X-Correlation-Id", str(uuid.uuid4()))
+    correlation_id.set(cid)
     start = time.time()
-
     response = await call_next(request)
-
-    response.headers["X-Correlation-Id"] = correlation_id
-
-    log.info(
-        json.dumps({
-            "timestamp": time.strftime(
-                "%Y-%m-%dT%H:%M:%S"
-            ),
-            "level": "INFO",
-            "correlation_id": correlation_id,
-            "method": request.method,
-            "path": request.url.path,
-            "status": response.status_code,
-            "ms": round(
-                (time.time() - start) * 1000
-            ),
-        })
+    response.headers["X-Correlation-Id"] = cid
+    log_event(
+        "INFO",
+        "request",
+        method=request.method,
+        path=request.url.path,
+        status=response.status_code,
+        ms=round((time.time() - start) * 1000),
     )
-
     return response
+
 
 
 # Health check
@@ -97,3 +82,4 @@ app.include_router(connector_router)
 # Expose fake platforms only in simulation mode
 if config.SIMULATION_MODE:
     app.mount("/mock", mock_app)
+from app.logging_utils import correlation_id, log_event

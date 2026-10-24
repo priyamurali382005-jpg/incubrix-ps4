@@ -11,3 +11,4 @@ rate_limits:
 capabilities: [publish, status, delete, build_assist_pack]
 error_map: {}
 instance_param: base_url
+idempotent_publish: false

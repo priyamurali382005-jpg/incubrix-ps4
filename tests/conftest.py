@@ -1,7 +1,7 @@
-
-import os
+﻿import os
 
 os.environ["DATABASE_URL"] = "sqlite:///./test.db"
+os.environ["JOBS_SYNC"] = "true"
 
 import pytest
 
@@ -15,8 +15,8 @@ def clean_db():
     conn = get_conn()
 
     try:
-        conn.execute("DELETE FROM posts")
-        conn.execute("DELETE FROM destinations")
+        for table in ("posts", "destinations", "jobs", "idempotency"):
+            conn.execute(f"DELETE FROM {table}")
         conn.commit()
     finally:
         conn.close()

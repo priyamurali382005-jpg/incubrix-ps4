@@ -15,3 +15,4 @@ error_map:
   "401": CONNECTION_AUTH_EXPIRED
   "403": CONNECTION_AUTH_EXPIRED
 instance_param: base_url
+idempotent_publish: false

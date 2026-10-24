@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, Header
 from pydantic import BaseModel, Field
 
 from app import catalogue
@@ -15,7 +15,8 @@ class PostIn(BaseModel):
     is_promotional: bool = False
     ai_generated: bool = False
     ai_disclosure_included: bool = False
-
+    canonical_url: str | None = None
+    tags: list[str] = Field(default_factory=list)
 
 class RuleCheckIn(BaseModel):
     destination_id: int
@@ -50,3 +51,61 @@ def check_rules(payload: RuleCheckIn):
     history = catalogue.recent_post_times(payload.destination_id)
     decision = evaluate(dest, payload.post.model_dump(), history)
     return decision.to_dict()
+
+from app import jobs, workflow
+from app.logging_utils import correlation_id
+
+
+class PublicationIn(BaseModel):
+    destination_id: int
+    post: PostIn
+    callback_url: str | None = None
+
+
+@router.post("/publications", status_code=202)
+def create_publication(
+    payload: PublicationIn,
+    idempotency_key: str | None = Header(default=None),
+):
+    if not idempotency_key:
+        raise AppError(
+            "IDEMPOTENCY_KEY_REQUIRED",
+            "Send an Idempotency-Key header.",
+            400,
+        )
+
+    if not catalogue.get_destination(payload.destination_id):
+        raise AppError(
+            "DESTINATION_NOT_FOUND",
+            "No such destination.",
+            404,
+        )
+
+    job_id, created = jobs.submit(
+        idempotency_key,
+        payload.model_dump(),
+        correlation_id.get(),
+    )
+
+    if created:
+        workflow.dispatch(job_id)
+
+    return {
+        "job_id": job_id,
+        "status_url": f"/api/v1/jobs/{job_id}",
+        "reused": not created,
+    }
+
+
+@router.get("/jobs/{job_id}")
+def get_job_status(job_id: str):
+    job = jobs.get_job(job_id)
+
+    if not job:
+        raise AppError(
+            "JOB_NOT_FOUND",
+            "No such job.",
+            404,
+        )
+
+    return jobs.public_view(job)

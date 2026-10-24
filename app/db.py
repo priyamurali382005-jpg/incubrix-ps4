@@ -1,5 +1,4 @@
-
-import sqlite3
+﻿import sqlite3
 from app import config
 
 
@@ -46,6 +45,24 @@ CREATE TABLE IF NOT EXISTS posts (
     destination_id INTEGER NOT NULL,
     status TEXT NOT NULL,
     posted_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS jobs (
+    id TEXT PRIMARY KEY,
+    status TEXT NOT NULL,
+    progress INTEGER NOT NULL DEFAULT 0,
+    request TEXT NOT NULL,
+    result TEXT,
+    error TEXT,
+    correlation_id TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS idempotency (
+    key TEXT PRIMARY KEY,
+    request_hash TEXT NOT NULL,
+    job_id TEXT NOT NULL
 );
 """
 

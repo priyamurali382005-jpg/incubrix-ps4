@@ -14,3 +14,4 @@ error_map:
   "422": PLATFORM_CONTENT_REJECTED
   "401": CONNECTION_AUTH_EXPIRED
 instance_param: base_url
+idempotent_publish: false
