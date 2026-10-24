@@ -31,3 +31,23 @@ async def app_error_handler(request: Request, exc: AppError):
             }
         },
     )
+
+# code -> (HTTP status, retryable)
+CODE_INFO = {
+    "DEST_SPEC_VIOLATION": (422, False),
+    "DEST_RULE_FREQUENCY_CAP": (429, False),
+    "CONNECTION_AUTH_EXPIRED": (401, False),
+    "PLATFORM_RATE_LIMIT": (429, True),
+    "PLATFORM_QUOTA_EXHAUSTED": (429, False),
+    "PLATFORM_CONTENT_REJECTED": (422, False),
+    "PLATFORM_UNAVAILABLE": (503, True),
+    "CONNECTOR_DISABLED": (403, False),
+    "CONNECTOR_NOT_FOUND": (404, False),
+    "METHOD_NOT_SUPPORTED": (404, False),
+    "IDEMPOTENCY_KEY_REQUIRED": (400, False),
+}
+
+
+def make_error(code, message, details=None):
+    status, retryable = CODE_INFO[code]
+    return AppError(code, message, status, retryable, details)

@@ -13,3 +13,10 @@ DATABASE_URL = os.environ.get(
 )
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+HTTP_TIMEOUT_S = float(os.environ.get("HTTP_TIMEOUT_S", "10"))
+
+DISABLED_CONNECTORS = {
+    c.strip()
+    for c in os.environ.get("DISABLED_CONNECTORS", "").split(",")
+    if c.strip()
+}

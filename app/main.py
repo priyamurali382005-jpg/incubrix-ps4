@@ -8,6 +8,8 @@ from fastapi import FastAPI, Request
 
 from app import config
 from app.api import router
+from app.connector_api import router as connector_router
+from app.mock_platforms import mock_app
 from app.db import init_db
 from app.errors import AppError, app_error_handler
 
@@ -87,3 +89,11 @@ def ready():
         "status": "ready",
         "simulation_mode": config.SIMULATION_MODE,
     }
+
+
+# Phase 3: Connector API
+app.include_router(connector_router)
+
+# Expose fake platforms only in simulation mode
+if config.SIMULATION_MODE:
+    app.mount("/mock", mock_app)
