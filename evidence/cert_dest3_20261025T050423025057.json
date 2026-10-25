@@ -1,0 +1,61 @@
+{
+  "destination_id": 3,
+  "destination_name": "Mock partner webhook",
+  "connector_key": "webhook",
+  "connector_version": "1.0.0",
+  "tier": "bridge",
+  "simulation_mode": true,
+  "started_at": "2026-10-25T05:04:23.004406+00:00",
+  "test_rendition": {
+    "title": "[IncuBrix certification test] 20261025-050423",
+    "body": "Automated certification test post. It is deleted within minutes. No action needed.",
+    "links": [],
+    "tags": []
+  },
+  "platform_post_id": "3",
+  "live_url": "http://mock/webhook/view/3",
+  "status_read": {
+    "status": "published",
+    "live_url": "http://mock/webhook/view/3"
+  },
+  "http_check": "skipped",
+  "seconds_publish_to_delete": 0.01,
+  "deleted_within_10_min": true,
+  "cleanup": {
+    "status": "not_needed"
+  },
+  "result": "passed",
+  "failed_step": null,
+  "error_code": null,
+  "steps": [
+    {
+      "step": "validate",
+      "ok": true,
+      "ms": 0
+    },
+    {
+      "step": "publish",
+      "ok": true,
+      "ms": 4
+    },
+    {
+      "step": "confirm_live",
+      "ok": true,
+      "ms": 3
+    },
+    {
+      "step": "delete",
+      "ok": true,
+      "ms": 3
+    },
+    {
+      "step": "confirm_deleted",
+      "ok": true,
+      "ms": 7
+    }
+  ],
+  "total_seconds": 0.02,
+  "finished_at": "2026-10-25T05:04:23.020761+00:00",
+  "new_level": "L2",
+  "evidence_path": "evidence\\cert_dest3_20261025T050423025057.json"
+}

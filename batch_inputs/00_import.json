@@ -1,0 +1,7 @@
+﻿{
+  "type": "import_csv",
+  "csv_file": "../catalogue/simulation_destinations.csv",
+  "expect": {
+    "http_status": 200
+  }
+}

@@ -1,0 +1,14 @@
+﻿{
+  "type": "certification",
+  "idempotency_key": "batch-cert-discourse-1",
+  "body": {
+    "destination": {
+      "name": "Discourse test forum"
+    }
+  },
+  "expect": {
+    "http_status": 202,
+    "job_status": "succeeded",
+    "cert_result": "passed"
+  }
+}

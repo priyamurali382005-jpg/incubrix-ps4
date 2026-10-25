@@ -1,4 +1,4 @@
-import re
+﻿import re
 
 from app.connectors.base import Connector
 from app.errors import AppError, make_error
@@ -63,6 +63,12 @@ class LemmyConnector(Connector):
         return resp.json()["community_view"]["community"]["id"]
 
     def publish(self, rendition, destination, connection, idempotency_key):
+        if rendition.get("media"):
+            raise make_error(
+                "DEST_SPEC_VIOLATION",
+                "Lemmy connector does not support media attachments.",
+                {"violations": [{"field": "media", "reason": "unsupported"}]},
+            )
         name = community_name(destination.get("url"))
         if not name:
             raise make_error("DEST_SPEC_VIOLATION", "Destination url must look like https://host/c/<community>.",

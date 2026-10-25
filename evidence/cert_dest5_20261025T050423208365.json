@@ -1,0 +1,61 @@
+{
+  "destination_id": 5,
+  "destination_name": "Mock Ghost",
+  "connector_key": "ghost",
+  "connector_version": "1.0.0",
+  "tier": "native",
+  "simulation_mode": true,
+  "started_at": "2026-10-25T05:04:23.164035+00:00",
+  "test_rendition": {
+    "title": "[IncuBrix certification test] 20261025-050423",
+    "body": "Automated certification test post. It is deleted within minutes. No action needed.",
+    "links": [],
+    "tags": []
+  },
+  "platform_post_id": "5",
+  "live_url": "http://mock/ghost/5/",
+  "status_read": {
+    "status": "published",
+    "live_url": "http://mock/ghost/5/"
+  },
+  "http_check": "skipped",
+  "seconds_publish_to_delete": 0.01,
+  "deleted_within_10_min": true,
+  "cleanup": {
+    "status": "not_needed"
+  },
+  "result": "passed",
+  "failed_step": null,
+  "error_code": null,
+  "steps": [
+    {
+      "step": "validate",
+      "ok": true,
+      "ms": 0
+    },
+    {
+      "step": "publish",
+      "ok": true,
+      "ms": 11
+    },
+    {
+      "step": "confirm_live",
+      "ok": true,
+      "ms": 7
+    },
+    {
+      "step": "delete",
+      "ok": true,
+      "ms": 8
+    },
+    {
+      "step": "confirm_deleted",
+      "ok": true,
+      "ms": 6
+    }
+  ],
+  "total_seconds": 0.03,
+  "finished_at": "2026-10-25T05:04:23.195203+00:00",
+  "new_level": "L3",
+  "evidence_path": "evidence\\cert_dest5_20261025T050423208365.json"
+}

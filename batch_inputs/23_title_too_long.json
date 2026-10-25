@@ -1,0 +1,18 @@
+﻿{
+  "type": "publication",
+  "idempotency_key": "batch-long-1",
+  "body": {
+    "destination": {
+      "name": "Dev.to test"
+    },
+    "post": {
+      "title": "This is an intentionally extremely long title designed to exceed the maximum title length permitted by the destination connector specification",
+      "body": "Test title length validation."
+    }
+  },
+  "expect": {
+    "http_status": 202,
+    "job_status": "failed",
+    "error_code": "DEST_SPEC_VIOLATION"
+  }
+}

@@ -1,10 +1,11 @@
-
-from fastapi import APIRouter, Body, Header, HTTPException
+﻿
+from fastapi import APIRouter, Body, File, Header, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from app import catalogue, certification, jobs, workflow, storage, config
 from app.errors import AppError
+from app import fetch
 from app.rules import evaluate
 from app.logging_utils import correlation_id
 
@@ -20,6 +21,8 @@ class PostIn(BaseModel):
     ai_disclosure_included: bool = False
     canonical_url: str | None = None
     tags: list[str] = Field(default_factory=list)
+    media: list[dict] = Field(default_factory=list)
+    media: list[dict] = Field(default_factory=list)
 
 
 class RuleCheckIn(BaseModel):
@@ -38,27 +41,42 @@ class CertificationIn(BaseModel):
     callback_url: str | None = None
 
 
+class URLImportIn(BaseModel):
+    url: str
+
+
 @router.post("/destinations", status_code=201)
-def create_destination(payload: dict = Body(...)):
-    status, result = catalogue.add_destination(payload)
+def create_destination(
+    payload: dict = Body(...),
+    idempotency_key: str | None = Header(default=None),
+):
+    def create():
+        status, result = catalogue.add_destination(payload)
 
-    if status == "invalid":
-        raise AppError(
-            "DEST_SPEC_VIOLATION",
-            "Destination is invalid.",
-            422,
-            details={"errors": result},
-        )
+        if status == "invalid":
+            raise AppError(
+                "DEST_SPEC_VIOLATION",
+                "Destination is invalid.",
+                422,
+                details={"errors": result},
+            )
 
-    if status == "duplicate":
-        raise AppError(
-            "DESTINATION_DUPLICATE",
-            "This destination already exists.",
-            409,
-        )
+        if status == "duplicate":
+            raise AppError(
+                "DESTINATION_DUPLICATE",
+                "This destination already exists.",
+                409,
+            )
 
-    return {"id": result}
+        return {"id": result}
 
+    response, _ = jobs.run_idempotent(
+        idempotency_key,
+        "create_destination",
+        payload,
+        create,
+    )
+    return response
 
 @router.get("/destinations")
 def get_destinations():
@@ -69,6 +87,33 @@ def get_destinations():
 def import_destinations(
     csv_text: str = Body(..., media_type="text/csv"),
 ):
+    return catalogue.import_csv(csv_text)
+
+
+@router.post("/destinations/import/upload")
+async def import_destinations_upload(file: UploadFile = File(...)):
+    if file.content_type not in ("text/csv", "application/csv", "application/vnd.ms-excel"):
+        raise AppError("CSV_INVALID", "Upload a CSV file.", 400)
+    data = await file.read(config.MAX_UPLOAD_BYTES + 1)
+    if len(data) > config.MAX_UPLOAD_BYTES:
+        raise AppError("UPLOAD_TOO_LARGE", "CSV file exceeds the size limit.", 413)
+    try:
+        csv_text = data.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        raise AppError("CSV_INVALID", "CSV must be UTF-8 encoded.", 400)
+    return catalogue.import_csv(csv_text)
+
+@router.post("/destinations/import/url")
+def import_destinations_csv_url(payload: dict = Body(...)):
+    csv_url = payload.get("csv_url")
+    if not csv_url:
+        raise AppError("REQUEST_INVALID", "csv_url is required.", 422)
+    csv_text = fetch.fetch_text(csv_url)
+    return catalogue.import_csv(csv_text)
+
+@router.post("/destinations/import-url")
+def import_destinations_url(payload: URLImportIn):
+    csv_text = fetch.fetch_text(payload.url)
     return catalogue.import_csv(csv_text)
 
 
@@ -87,6 +132,7 @@ def check_rules(payload: RuleCheckIn):
     decision = evaluate(dest, payload.post.model_dump(), history)
 
     return decision.to_dict()
+
 
 @router.post("/publications", status_code=202)
 def create_publication(
@@ -187,6 +233,8 @@ def certification_history(destination_id: int):
         )
 
     return {"items": certification.history(destination_id)}
+
+
 @router.get("/files/{key}")
 def download_file(key: str):
     if config.STORAGE_BACKEND == "s3":
@@ -197,3 +245,10 @@ def download_file(key: str):
 
     path = storage.read_local(key)
     return FileResponse(path)
+
+
+
+
+
+
+

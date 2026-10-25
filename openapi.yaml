@@ -1,0 +1,530 @@
+openapi: 3.1.0
+info:
+  title: IncuBrix Distribution
+  version: 0.1.0
+paths:
+  /api/v1/destinations:
+    post:
+      summary: Create Destination
+      operationId: create_destination_api_v1_destinations_post
+      parameters:
+      - name: idempotency-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Payload
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: Get Destinations
+      operationId: get_destinations_api_v1_destinations_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /api/v1/destinations/import:
+    post:
+      summary: Import Destinations
+      operationId: import_destinations_api_v1_destinations_import_post
+      requestBody:
+        content:
+          text/csv:
+            schema:
+              type: string
+              title: Csv Text
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/destinations/import/upload:
+    post:
+      summary: Import Destinations Upload
+      operationId: import_destinations_upload_api_v1_destinations_import_upload_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_import_destinations_upload_api_v1_destinations_import_upload_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/destinations/import/url:
+    post:
+      summary: Import Destinations Csv Url
+      operationId: import_destinations_csv_url_api_v1_destinations_import_url_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties: true
+              type: object
+              title: Payload
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/destinations/import-url:
+    post:
+      summary: Import Destinations Url
+      operationId: import_destinations_url_api_v1_destinations_import_url_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/URLImportIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/rules/check:
+    post:
+      summary: Check Rules
+      operationId: check_rules_api_v1_rules_check_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RuleCheckIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/publications:
+    post:
+      summary: Create Publication
+      operationId: create_publication_api_v1_publications_post
+      parameters:
+      - name: idempotency-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicationIn'
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/jobs/{job_id}:
+    get:
+      summary: Get Job Status
+      operationId: get_job_status_api_v1_jobs__job_id__get
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Job Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/certifications:
+    post:
+      summary: Create Certification
+      operationId: create_certification_api_v1_certifications_post
+      parameters:
+      - name: idempotency-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationIn'
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/destinations/{destination_id}/certifications:
+    get:
+      summary: Certification History
+      operationId: certification_history_api_v1_destinations__destination_id__certifications_get
+      parameters:
+      - name: destination_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Destination Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/files/{key}:
+    get:
+      summary: Download File
+      operationId: download_file_api_v1_files__key__get
+      parameters:
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /connector/v1/{connector_key}/{method}:
+    post:
+      summary: Call Connector
+      operationId: call_connector_connector_v1__connector_key___method__post
+      parameters:
+      - name: connector_key
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Connector Key
+      - name: method
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Method
+      - name: idempotency-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      summary: Health
+      operationId: health_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /ready:
+    get:
+      summary: Ready
+      operationId: ready_ready_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    Body_import_destinations_upload_api_v1_destinations_import_upload_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_import_destinations_upload_api_v1_destinations_import_upload_post
+    CallIn:
+      properties:
+        rendition:
+          additionalProperties: true
+          type: object
+          title: Rendition
+        destination:
+          additionalProperties: true
+          type: object
+          title: Destination
+        connection:
+          additionalProperties: true
+          type: object
+          title: Connection
+        idempotency_key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency Key
+        platform_post_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Platform Post Id
+        since:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Since
+      type: object
+      title: CallIn
+    CertificationIn:
+      properties:
+        destination_id:
+          type: integer
+          title: Destination Id
+        callback_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Callback Url
+      type: object
+      required:
+      - destination_id
+      title: CertificationIn
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    PostIn:
+      properties:
+        title:
+          type: string
+          title: Title
+        body:
+          type: string
+          title: Body
+          default: ''
+        links:
+          items:
+            type: string
+          type: array
+          title: Links
+        is_promotional:
+          type: boolean
+          title: Is Promotional
+          default: false
+        ai_generated:
+          type: boolean
+          title: Ai Generated
+          default: false
+        ai_disclosure_included:
+          type: boolean
+          title: Ai Disclosure Included
+          default: false
+        canonical_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Canonical Url
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+        media:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Media
+      type: object
+      required:
+      - title
+      title: PostIn
+    PublicationIn:
+      properties:
+        destination_id:
+          type: integer
+          title: Destination Id
+        post:
+          $ref: '#/components/schemas/PostIn'
+        callback_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Callback Url
+      type: object
+      required:
+      - destination_id
+      - post
+      title: PublicationIn
+    RuleCheckIn:
+      properties:
+        destination_id:
+          type: integer
+          title: Destination Id
+        post:
+          $ref: '#/components/schemas/PostIn'
+      type: object
+      required:
+      - destination_id
+      - post
+      title: RuleCheckIn
+    URLImportIn:
+      properties:
+        url:
+          type: string
+          title: Url
+      type: object
+      required:
+      - url
+      title: URLImportIn
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

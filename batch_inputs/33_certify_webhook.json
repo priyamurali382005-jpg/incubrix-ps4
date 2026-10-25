@@ -1,0 +1,14 @@
+﻿{
+  "type": "certification",
+  "idempotency_key": "batch-cert-webhook-1",
+  "body": {
+    "destination": {
+      "name": "Partner webhook test"
+    }
+  },
+  "expect": {
+    "http_status": 202,
+    "job_status": "succeeded",
+    "cert_result": "passed"
+  }
+}

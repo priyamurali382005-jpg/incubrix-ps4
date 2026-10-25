@@ -1,0 +1,14 @@
+﻿{
+  "type": "certification",
+  "idempotency_key": "batch-cert-assisted-1",
+  "body": {
+    "destination": {
+      "name": "Assisted test community"
+    }
+  },
+  "expect": {
+    "http_status": 202,
+    "job_status": "succeeded",
+    "cert_result": "passed"
+  }
+}

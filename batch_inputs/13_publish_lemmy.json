@@ -1,0 +1,20 @@
+﻿{
+  "type": "publication",
+  "idempotency_key": "batch-lemmy-1",
+  "body": {
+    "destination": {
+      "name": "Lemmy test community"
+    },
+    "post": {
+      "title": "Five Python Tips for Beginners",
+      "body": "Start with small scripts and read other people's code.",
+      "links": [
+        "https://example.com/python-tips"
+      ]
+    }
+  },
+  "expect": {
+    "http_status": 202,
+    "job_status": "succeeded"
+  }
+}

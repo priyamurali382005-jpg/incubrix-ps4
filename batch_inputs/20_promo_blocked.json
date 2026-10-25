@@ -1,0 +1,20 @@
+﻿{
+  "type": "publication",
+  "idempotency_key": "batch-promo-1",
+  "body": {
+    "destination": {
+      "name": "No-promo test forum"
+    },
+    "post": {
+      "title": "Buy our tool",
+      "body": "Great product",
+      "is_promotional": true
+    }
+  },
+  "expect": {
+    "http_status": 202,
+    "job_status": "failed",
+    "error_code": "DEST_RULE_SELF_PROMO",
+    "outcome": "blocked"
+  }
+}

@@ -1,6 +1,6 @@
-
 import json
 import os
+from pathlib import Path
 
 from app import config
 from app.errors import make_error
@@ -34,6 +34,26 @@ def _sim():
     }
 
 
+def _from_file(destination: dict) -> dict:
+    filename = config.CONN_FILE
+    if not filename:
+        return {}
+
+    path = Path(filename)
+    if not path.is_file():
+        return {}
+
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        raise make_error(
+            "CONNECTION_MISSING",
+            "Connection configuration file must contain valid JSON.",
+        )
+
+    return data.get(destination["id"]) or data.get(destination["connector_key"]) or {}
+
+
 def get_connection(destination: dict) -> dict:
     key = destination["connector_key"]
 
@@ -45,19 +65,23 @@ def get_connection(destination: dict) -> dict:
         or os.environ.get(f"CONN_{key.upper()}")
     )
 
-    if not raw:
-        if key == "assisted":
-            return {}
+    if raw:
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            raise make_error(
+                "CONNECTION_MISSING",
+                f"Credentials for destination {destination['id']} must be valid JSON.",
+            )
 
-        raise make_error(
-            "CONNECTION_MISSING",
-            f"No credentials configured for destination {destination['id']}.",
-        )
+    file_connection = _from_file(destination)
+    if file_connection:
+        return file_connection
 
-    try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        raise make_error(
-            "CONNECTION_MISSING",
-            f"Credentials for destination {destination['id']} must be valid JSON.",
-        )
+    if key == "assisted":
+        return {}
+
+    raise make_error(
+        "CONNECTION_MISSING",
+        f"No credentials configured for destination {destination['id']}.",
+    )

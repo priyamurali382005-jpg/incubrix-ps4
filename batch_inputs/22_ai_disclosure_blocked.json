@@ -1,0 +1,20 @@
+﻿{
+  "type": "publication",
+  "idempotency_key": "batch-ai-1",
+  "body": {
+    "destination": {
+      "name": "AI-disclosure test forum"
+    },
+    "post": {
+      "title": "Written with AI help",
+      "body": "Text",
+      "ai_generated": true
+    }
+  },
+  "expect": {
+    "http_status": 202,
+    "job_status": "failed",
+    "error_code": "DEST_RULE_AI_DISCLOSURE",
+    "outcome": "blocked"
+  }
+}

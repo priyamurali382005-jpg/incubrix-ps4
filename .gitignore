@@ -6,3 +6,10 @@ __pycache__/
 .pytest_cache/
 test_evidence/
 docker/lemmy.hjson
+# Phase 6 generated outputs and measurement artifacts
+test_files/
+files/
+logs/
+measure.db
+measure_evidence/
+measure_files/

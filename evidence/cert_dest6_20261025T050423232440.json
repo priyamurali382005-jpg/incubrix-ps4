@@ -1,0 +1,31 @@
+{
+  "destination_id": 6,
+  "destination_name": "Mock assisted community",
+  "connector_key": "assisted",
+  "connector_version": "1.0.0",
+  "tier": "assisted",
+  "simulation_mode": true,
+  "started_at": "2026-10-25T05:04:23.228355+00:00",
+  "cleanup": {
+    "status": "not_needed"
+  },
+  "result": "passed",
+  "failed_step": null,
+  "error_code": null,
+  "steps": [
+    {
+      "step": "build_pack",
+      "ok": true,
+      "ms": 0
+    },
+    {
+      "step": "check_pack",
+      "ok": true,
+      "ms": 0
+    }
+  ],
+  "total_seconds": 0.0,
+  "finished_at": "2026-10-25T05:04:23.228385+00:00",
+  "new_level": "L1",
+  "evidence_path": "evidence\\cert_dest6_20261025T050423232440.json"
+}

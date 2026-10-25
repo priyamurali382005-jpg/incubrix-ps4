@@ -1,0 +1,10 @@
+﻿name,url,platform_key,connector_key,self_promo_allowed,link_policy,disclosure_required,language
+Discourse test forum,https://mock-forum.example,discourse,discourse,true,allowed,false,en
+Dev.to test,https://dev.to,devto,devto,true,allowed,false,en
+Partner webhook test,https://partner.example/hook,webhook,webhook,true,allowed,false,en
+Lemmy test community,http://localhost:8536/c/testcomm,lemmy,lemmy,true,allowed,false,en
+Ghost test blog,http://localhost:2368,ghost,ghost,true,allowed,false,en
+Assisted test community,https://community.example,assisted,assisted,true,allowed,false,en
+No-promo test forum,https://nopromo-forum.example,discourse,discourse,false,allowed,false,en
+AI-disclosure test forum,https://disclosure-forum.example,discourse,discourse,true,allowed,true,en
+Tamil test forum,https://tamil-forum.example,discourse,discourse,true,allowed,false,ta

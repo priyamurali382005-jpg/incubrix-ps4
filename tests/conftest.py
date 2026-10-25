@@ -17,6 +17,7 @@ def clean_db():
         "destinations",
         "jobs",
         "idempotency",
+        "idempotent_responses",
         "certifications",
         "alerts",
     ):

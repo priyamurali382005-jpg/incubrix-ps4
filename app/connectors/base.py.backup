@@ -1,0 +1,28 @@
+from dataclasses import dataclass, field
+from typing import Any, Protocol
+
+
+@dataclass
+class PublishRequest:
+    idempotency_key: str
+    destination: str
+    content: dict[str, Any]
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class PublishResult:
+    status: str
+    remote_id: str | None = None
+    remote_url: str | None = None
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+class Connector(Protocol):
+    name: str
+
+    def validate(self, request: PublishRequest) -> None:
+        ...
+
+    def publish(self, request: PublishRequest) -> PublishResult:
+        ...
