@@ -53,6 +53,18 @@ class Connector:
                 "field": "links",
                 "reason": "links not allowed",
             })
+        accepted = set(self.manifest["surfaces"][0]["content_types"])
+        for item in rendition.get("media", []):
+            kind = item.get("type", "unknown")
+            if kind not in accepted:
+                violations.append({
+                    "field": "media",
+                    "reason": (
+                        f"media type '{kind}' is not accepted here; "
+                        f"accepted: {sorted(accepted)}"
+                    ),
+                })
+
 
         return {"ok": not violations, "violations": violations}
 

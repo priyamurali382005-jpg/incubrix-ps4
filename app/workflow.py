@@ -3,8 +3,8 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 import httpx
-
-from app import catalogue, certification, config
+from app import catalogue, certification, config, storage
+from app import manifest as run_manifest
 from app.connections import get_connection
 from app.connectors import get_connector
 from app.connectors.webhook import sign
@@ -26,16 +26,18 @@ def reset_state():
     _failures.clear()
 
 
+
 def _client():
-    """Simulation mode talks to the in-process mock platforms. Real mode uses a normal HTTP client."""
+    """In-process mock in simulation mode. A real HTTP client when a mock server URL or real mode is used."""
     global _sim_client
-    if not config.SIMULATION_MODE:
+    if not config.SIMULATION_MODE or config.MOCK_BASE_URL:
         return None
     if _sim_client is None:
         from fastapi.testclient import TestClient
         from app.mock_platforms import mock_app
         _sim_client = TestClient(mock_app)
     return _sim_client
+
 
 
 def dispatch(job_id: str):
@@ -113,13 +115,27 @@ def _execute(job_id: str, req: dict) -> dict:
         raise make_error("DEST_SPEC_VIOLATION", "Content breaks the destination's limits.",
                          {"violations": check["violations"]})
 
+
     # 4. Publish (or build the pack for a person)
     update_job(job_id, progress=55)
     conn = get_connection(dest)
     result = {}
     if connector.key == "assisted":
-        result["pack"] = connector.build_assist_pack(post, dest)
-    outcome, attempts = _publish_with_retries(connector, post, dest, conn, job_id, job_id)
+        pack = connector.build_assist_pack(post, dest)
+        for f in pack["files"]:
+            try:
+                f["download_url"] = storage.put(
+                    f"pack-{job_id}-{f['name']}",
+                    f["content"].encode(),
+                    "text/markdown",
+                )["url"]
+            except AppError:
+                f["download_url"] = None
+        result["pack"] = pack
+
+    outcome, attempts = _publish_with_retries(
+        connector, post, dest, conn, job_id, job_id
+    )
     published = outcome["status"] == "published"
 
     # 5. Remember it, so the weekly cap works next time
@@ -130,39 +146,64 @@ def _execute(job_id: str, req: dict) -> dict:
     return result
 
 
+
 def run_publication(job_id: str):
     job = get_job(job_id)
+    req = job["request"]
     correlation_id.set(job["correlation_id"])
+    started = time.monotonic()
     update_job(job_id, status="running", progress=5)
     log_event("INFO", "job started", job_id=job_id)
-    try:
-        if job["request"].get("kind") == "certification":
-            result = certification.certify(
-                job["request"]["destination_id"]
-            )
-        else:
-            result = _execute(job_id, job["request"])
+    status, result, error = "succeeded", {}, None
 
-        update_job(
-            job_id,
-            status="succeeded",
-            progress=100,
-            result=result,
-        )
+    try:
+        if req.get("kind") == "certification":
+            result = certification.certify(req["destination_id"])
+        else:
+            result = _execute(job_id, req)
         log_event("INFO", "job succeeded", job_id=job_id)
+
     except AppError as err:
         outcome = getattr(err, "outcome", None) or (
-            "unknown_outcome" if err.details.get("outcome_unknown") else "failed")
-        update_job(job_id, status="failed", progress=100, result={"outcome": outcome},
-                   error={"code": err.code, "message": err.message,
-                          "retryable": err.retryable, "details": err.details})
-        log_event("WARNING", "job failed", job_id=job_id, code=err.code, outcome=outcome)
-    except Exception as exc:  # never leak internals or secrets to the caller
-        log_event("ERROR", "unexpected error", job_id=job_id, error_type=type(exc).__name__)
-        update_job(job_id, status="failed", progress=100, result={"outcome": "failed"},
-                   error={"code": "INTERNAL_ERROR", "message": "Unexpected error.",
-                          "retryable": False, "details": {}})
+            "unknown_outcome" if err.details.get("outcome_unknown") else "failed"
+        )
+        status, result = "failed", {"outcome": outcome}
+        error = {
+            "code": err.code,
+            "message": err.message,
+            "retryable": err.retryable,
+            "details": err.details,
+        }
+        log_event("WARNING", "job failed", job_id=job_id,
+                  code=err.code, outcome=outcome)
+
+    except Exception as exc:
+        log_event("ERROR", "unexpected error", job_id=job_id,
+                  error_type=type(exc).__name__)
+        status, result = "failed", {"outcome": "failed"}
+        error = {
+            "code": "INTERNAL_ERROR",
+            "message": "Unexpected error.",
+            "retryable": False,
+            "details": {},
+        }
+
+    result["manifest"] = run_manifest.build(
+        req,
+        result,
+        error,
+        started,
+        catalogue.get_destination(req["destination_id"]),
+    )
+    update_job(
+        job_id,
+        status=status,
+        progress=100,
+        result=result,
+        error=error,
+    )
     _send_callback(get_job(job_id))
+
 
 
 def _send_callback(job: dict):

@@ -1,4 +1,5 @@
-﻿from fastapi import APIRouter
+﻿
+from fastapi import APIRouter, Header
 from pydantic import BaseModel, Field
 
 from app.connectors import get_connector
@@ -28,7 +29,12 @@ METHODS = {
 
 
 @router.post("/{connector_key}/{method}")
-def call_connector(connector_key: str, method: str, body: CallIn):
+def call_connector(
+    connector_key: str,
+    method: str,
+    b: CallIn,
+    idempotency_key: str | None = Header(default=None),
+):
     connector = get_connector(connector_key)
 
     if method not in METHODS:
@@ -46,51 +52,55 @@ def call_connector(connector_key: str, method: str, body: CallIn):
 
     if method == "validate":
         return connector.validate(
-            body.rendition,
-            body.destination,
-            body.connection,
+            b.rendition,
+            b.destination,
+            b.connection,
         )
 
     if method == "publish":
-        if not body.idempotency_key:
+        key = b.idempotency_key or idempotency_key
+
+        if not key:
             raise make_error(
                 "IDEMPOTENCY_KEY_REQUIRED",
                 "publish needs idempotency_key.",
             )
 
         return connector.publish(
-            body.rendition,
-            body.destination,
-            body.connection,
-            body.idempotency_key,
+            b.rendition,
+            b.destination,
+            b.connection,
+            key,
         )
 
     if method == "get_status":
-        if not body.platform_post_id:
+        if not b.platform_post_id:
             raise make_error(
                 "METHOD_NOT_SUPPORTED",
                 "get_status requires platform_post_id.",
             )
+
         return connector.get_status(
-            body.platform_post_id,
-            body.connection,
+            b.platform_post_id,
+            b.connection,
         )
 
     if method == "delete":
-        if not body.platform_post_id:
+        if not b.platform_post_id:
             raise make_error(
                 "METHOD_NOT_SUPPORTED",
                 "delete requires platform_post_id.",
             )
+
         return connector.delete(
-            body.platform_post_id,
-            body.connection,
+            b.platform_post_id,
+            b.connection,
         )
 
     if method == "build_assist_pack":
         return connector.build_assist_pack(
-            body.rendition,
-            body.destination,
+            b.rendition,
+            b.destination,
         )
 
     raise make_error(

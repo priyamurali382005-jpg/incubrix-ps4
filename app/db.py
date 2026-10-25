@@ -96,3 +96,13 @@ def init_db():
         conn.commit()
     finally:
         conn.close()
+
+# --- phase6 additions ---
+
+SCHEMA = SCHEMA + """
+CREATE TABLE IF NOT EXISTS idempotent_responses (
+    key TEXT PRIMARY KEY,
+    request_hash TEXT NOT NULL,
+    response TEXT NOT NULL
+);
+"""

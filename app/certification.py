@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 import httpx
 
-from app import catalogue, config
+from app import catalogue, config, storage
 from app.connections import get_connection
 from app.connectors import get_connector
 from app.db import get_conn

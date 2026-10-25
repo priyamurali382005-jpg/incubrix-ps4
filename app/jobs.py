@@ -110,3 +110,32 @@ def public_view(job: dict) -> dict:
         "created_at": job["created_at"],
         "updated_at": job["updated_at"],
     }
+
+# --- phase6 additions ---
+
+
+def run_idempotent(key, route: str, request, fn):
+    """For POST routes that are not jobs. Same key + same request => the stored response, work not repeated."""
+    if not key:
+        raise make_error("IDEMPOTENCY_KEY_REQUIRED", "Send an Idempotency-Key header.")
+    scoped, h = f"{route}:{key}", request_hash({"route": route, "request": request})
+    conn = get_conn()
+    try:
+        row = conn.execute("SELECT request_hash, response FROM idempotent_responses WHERE key = ?",
+                           (scoped,)).fetchone()
+    finally:
+        conn.close()
+    if row:
+        if row["request_hash"] != h:
+            raise make_error("IDEMPOTENCY_KEY_REUSED",
+                             "This Idempotency-Key was already used with a different request.")
+        return json.loads(row["response"]), True
+    result = fn()                      # errors are not stored, so a failed request can be retried
+    conn = get_conn()
+    try:
+        conn.execute("INSERT OR IGNORE INTO idempotent_responses (key, request_hash, response) VALUES (?,?,?)",
+                     (scoped, h, json.dumps(result)))
+        conn.commit()
+    finally:
+        conn.close()
+    return result, False
