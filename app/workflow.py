@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import httpx
 
-from app import catalogue, config
+from app import catalogue, certification, config
 from app.connections import get_connection
 from app.connectors import get_connector
 from app.connectors.webhook import sign
@@ -136,7 +136,19 @@ def run_publication(job_id: str):
     update_job(job_id, status="running", progress=5)
     log_event("INFO", "job started", job_id=job_id)
     try:
-        update_job(job_id, status="succeeded", progress=100, result=_execute(job_id, job["request"]))
+        if job["request"].get("kind") == "certification":
+            result = certification.certify(
+                job["request"]["destination_id"]
+            )
+        else:
+            result = _execute(job_id, job["request"])
+
+        update_job(
+            job_id,
+            status="succeeded",
+            progress=100,
+            result=result,
+        )
         log_event("INFO", "job succeeded", job_id=job_id)
     except AppError as err:
         outcome = getattr(err, "outcome", None) or (

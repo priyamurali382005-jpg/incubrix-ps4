@@ -173,3 +173,19 @@ def recent_post_times(dest_id: int):
     ).fetchall()
     conn.close()
     return [datetime.fromisoformat(r["posted_at"]) for r in rows]
+UPDATABLE = {"enabled", "level", "last_certified_at"}
+
+
+def update_destination(dest_id: int, **fields):
+    if not fields or set(fields) - UPDATABLE:
+        raise ValueError(f"can only update {sorted(UPDATABLE)}")
+
+    sets = ", ".join(f"{name} = ?" for name in fields)
+
+    conn = get_conn()
+    conn.execute(
+        f"UPDATE destinations SET {sets} WHERE id = ?",
+        (*fields.values(), dest_id),
+    )
+    conn.commit()
+    conn.close()

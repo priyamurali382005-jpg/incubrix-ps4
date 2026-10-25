@@ -12,6 +12,7 @@ def get_conn():
     return conn
 
 
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS destinations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,6 +41,26 @@ CREATE TABLE IF NOT EXISTS destinations (
     UNIQUE(normalized_url, platform_key)
 );
 
+CREATE TABLE IF NOT EXISTS certifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    destination_id INTEGER NOT NULL,
+    connector_key TEXT NOT NULL,
+    result TEXT NOT NULL,
+    failed_step TEXT,
+    total_seconds REAL,
+    evidence_path TEXT,
+    evidence TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS alerts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    destination_id INTEGER,
+    severity TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     destination_id INTEGER NOT NULL,
@@ -65,6 +86,7 @@ CREATE TABLE IF NOT EXISTS idempotency (
     job_id TEXT NOT NULL
 );
 """
+
 
 
 def init_db():

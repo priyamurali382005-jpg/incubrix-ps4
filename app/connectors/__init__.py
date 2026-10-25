@@ -1,7 +1,10 @@
-﻿from app import config
+﻿
+from app import config
 from app.connectors.assisted import AssistedConnector
 from app.connectors.devto import DevtoConnector
 from app.connectors.discourse import DiscourseConnector
+from app.connectors.ghost import GhostConnector
+from app.connectors.lemmy import LemmyConnector
 from app.connectors.webhook import WebhookConnector
 from app.errors import make_error
 
@@ -13,6 +16,8 @@ REGISTRY = {
         DevtoConnector,
         WebhookConnector,
         AssistedConnector,
+        LemmyConnector,
+        GhostConnector,
     )
 }
 
