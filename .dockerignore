@@ -1,0 +1,11 @@
+﻿.git
+.venv
+__pycache__
+*.db
+.env
+test_*
+evidence
+logs
+measure*
+files
+batch_results
