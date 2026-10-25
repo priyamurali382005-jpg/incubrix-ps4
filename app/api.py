@@ -1,8 +1,9 @@
 
-from fastapi import APIRouter, Body, Header
+from fastapi import APIRouter, Body, Header, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from app import catalogue, certification, jobs, workflow
+from app import catalogue, certification, jobs, workflow, storage, config
 from app.errors import AppError
 from app.rules import evaluate
 from app.logging_utils import correlation_id
@@ -86,7 +87,6 @@ def check_rules(payload: RuleCheckIn):
     decision = evaluate(dest, payload.post.model_dump(), history)
 
     return decision.to_dict()
-
 
 @router.post("/publications", status_code=202)
 def create_publication(
@@ -187,3 +187,13 @@ def certification_history(destination_id: int):
         )
 
     return {"items": certification.history(destination_id)}
+@router.get("/files/{key}")
+def download_file(key: str):
+    if config.STORAGE_BACKEND == "s3":
+        raise HTTPException(
+            status_code=404,
+            detail="File not found.",
+        )
+
+    path = storage.read_local(key)
+    return FileResponse(path)
