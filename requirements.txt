@@ -1,6 +1,9 @@
+
 fastapi
 uvicorn
 httpx
 pytest
 pyyaml
 PyJWT
+boto3
+python-multipart
